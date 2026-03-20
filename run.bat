@@ -31,5 +31,9 @@ echo Acesse o servidor em:
 echo - Neste computador:     http://localhost
 echo - Outro dispositivo:    http://!ip!
 
+REM Abre o navegador
+timeout /t 2 /nobreak >nul
+start http://localhost
+
 REM Inicia o servidor
 call npm start
