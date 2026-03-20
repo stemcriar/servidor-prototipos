@@ -3,6 +3,17 @@ REM Script para iniciar o servidor STEM Criar
 
 echo.
 echo [*] Verificando dependencias...
+
+REM Verificando Node.js
+where node >nul 2>nul
+if errorlevel 1 (
+    echo [X] Node.js nao encontrado. Por favor, instale Node.js
+    echo Acesse: https://nodejs.org/
+    pause
+    exit /b
+)
+
+REM Verificando node_modules\
 if not exist "node_modules\" (
     echo [!] node_modules nao encontrado!
     echo [*] Instalando dependencias...
