@@ -1,0 +1,9 @@
+{
+  "runningMachineState": "on",
+  "arm1State": "off",
+  "arm2State": "on",
+  "cart": {
+    "cartState": "on",
+    "cartSpeed": 8
+  }
+}

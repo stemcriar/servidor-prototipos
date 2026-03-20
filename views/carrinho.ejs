@@ -1,0 +1,188 @@
+<!DOCTYPE html>
+<html lang="pt-br">
+  <head>
+    <title>Carrinho</title>
+    <meta
+      name="viewport"
+      content="maximum-scale=1.0 user-scalable=no"
+      charset="utf-8"
+    />
+
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link
+      href="https://fonts.googleapis.com/css2?family=Rubik:wght@400;500&display=swap"
+      rel="stylesheet"
+    />
+    <link href="../stylesheets/reset.css" rel="stylesheet" />
+    <link href="../stylesheets/carrinho_style.css" rel="stylesheet" />
+  </head>
+  <body>
+    <header>
+      <div class="header-menu">
+        <a href="./" id="back-button"></a>
+        <img
+        class="logo-acadstem"  
+        src="/images/manipulador/Logo acadstem.png"
+        alt="Logo-academia-stem"
+        />
+        <h1>Carrinho</h1>
+      </div>
+    </header>
+
+    <div class="secao-joystick">
+      <div class="secao-imagem-carrinho">
+        <img
+          src="../images/carrinho/Chassi_II.png"
+          class="imagem_carrinho"
+          alt="imagem-do-carrinho"
+        />
+      </div>
+      <canvas class="canvas_style" id="canvas" name="game"></canvas>
+    </div>
+    <script>
+      var canvas, ctx, rect;
+      let last = +new Date();
+
+      window.addEventListener("load", () => {
+        canvas = document.getElementById("canvas");
+        ctx = canvas.getContext("2d");
+        rect = canvas.getBoundingClientRect();
+        resize();
+        document.addEventListener("mousedown", startDrawing);
+        document.addEventListener("mouseup", stopDrawing);
+        document.addEventListener("mousemove", Draw);
+        document.addEventListener("touchstart", startDrawing);
+        document.addEventListener("touchend", stopDrawing);
+        document.addEventListener("touchcancel", stopDrawing);
+        document.addEventListener("touchmove", Draw);
+        window.addEventListener("resize", resize);
+      });
+
+      var width, height, radius, x_orig, y_orig;
+
+      function resize() {
+        width = window.innerWidth;
+        radius = 200;
+        height = radius * 6.5;
+        ctx.canvas.width = width;
+        ctx.canvas.height = height;
+        if (width >= 1024) {
+          radius = 305;
+          ctx.canvas.width = width + 1500;
+          ctx.canvas.height = height - 300;
+        }
+        background();
+        joystick(width / 2, height / 3);
+      }
+
+      function background() {
+        x_orig = width / 2;
+        y_orig = height / 3;
+        ctx.beginPath();
+        ctx.arc(x_orig - 100, y_orig + 25, radius + 20, 0, Math.PI * 2, true);
+        ctx.fillStyle = "rgba(0, 0, 0, 0)";
+        ctx.lineWidth = 5;
+        ctx.strokeStyle = "#014D8F";
+        ctx.shadowBlur = 0;
+        ctx.fill();
+        ctx.stroke();
+      }
+
+      function joystick(width, height) {
+        ctx.beginPath();
+        ctx.arc(width - 100, height + 25, radius / 2, 0, Math.PI * 2, true);
+        ctx.fillStyle = "#FFA200";
+        ctx.shadowColor = "#0000006B";
+        ctx.shadowBlur = 10;
+        ctx.fill();
+      }
+
+      let coord = { x: 0, y: 0 };
+      let paint = false;
+
+      function getPosition(event) {
+        e = window.event || e;
+        var mouse_x = Math.round(e.clientX) || e.touches[0].clientX;
+        var mouse_y = Math.round(e.clientY) || e.touches[0].clientY;
+        if (width >= 1024) {
+          coord.x = mouse_x
+          coord.y = mouse_y
+        } else {
+          coord.x = mouse_x - canvas.offsetLeft;
+          coord.y = mouse_y - canvas.offsetTop;
+        }
+        //console.log(mouse_x, mouse_y);
+      }
+      function is_it_in_the_circle() {
+        var current_radius = Math.sqrt(
+          Math.pow(coord.x - x_orig, 2) + Math.pow(coord.y - y_orig, 2)
+        );
+        if (radius >= current_radius) return true;
+        else return false;
+      }
+
+      function startDrawing(event) {
+        paint = true;
+        getPosition(event);
+        if (is_it_in_the_circle()) {
+          ctx.clearRect(0, 0, canvas.width, canvas.height);
+          background();
+          joystick(coord.x, coord.y);
+          Draw();
+        }
+      }
+      function stopDrawing() {
+        paint = false;
+        ctx.clearRect(0, 0, canvas.width, canvas.height);
+        background();
+        joystick(width / 2, height / 3);
+
+        send(0, 0, 0, 0);
+      }
+
+      function Draw(event) {
+        if (paint) {
+          getPosition(event);
+          ctx.clearRect(0, 0, canvas.width, canvas.height);
+          background();
+          var angle_in_degrees, x, y, speed;
+          var angle = Math.atan2(coord.y - y_orig, coord.x - x_orig);
+
+          if (Math.sign(angle) == -1) {
+            angle_in_degrees = Math.round((-angle * 180) / Math.PI);
+          } else {
+            angle_in_degrees = Math.round(360 - (angle * 180) / Math.PI);
+          }
+
+          if (is_it_in_the_circle()) {
+            joystick(coord.x, coord.y);
+            x = coord.x;
+            y = coord.y;
+          } else {
+            x = radius * Math.cos(angle) + x_orig;
+            y = radius * Math.sin(angle) + y_orig;
+            joystick(x, y);
+          }
+
+          var speed = Math.round(
+            (100 *
+              Math.sqrt(Math.pow(x - x_orig, 2) + Math.pow(y - y_orig, 2))) /
+              radius
+          );
+
+          var x_relative = Math.round(x - x_orig);
+          var y_relative = Math.round(y - y_orig);
+
+          const now = +new Date();
+          if (now - last > 50) {
+            last = now;
+            send(x_relative, y_relative, speed, angle_in_degrees);
+          }
+        }
+      }
+    </script>
+    <script src="../javascripts/carrinho_script.js"></script>
+    <footer></footer>
+  </body>
+</html>
