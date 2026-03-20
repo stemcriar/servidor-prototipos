@@ -18,18 +18,18 @@ if not exist "node_modules\" (
 )
 
 echo.
-echo [*] Iniciando o servidor...
-echo [*] Abrindo navegador em http://localhost...
-echo.
-echo ============================================
-echo Servidor iniciando na porta 80
-echo Pressione CTRL+C para parar o servidor
-echo ============================================
+echo [*] Inicializando o servidor...
 echo.
 
-REM Abre o navegador
-timeout /t 2 /nobreak
-start http://localhost
+setlocal enabledelayedexpansion
+for /f "tokens=2 delims=:" %%A in ('ipconfig ^| findstr /I "IPv4"') do (
+    set "ip=%%A"
+    set "ip=!ip:~1!"
+)
+
+echo Acesse o servidor em:
+echo - Neste computador:     http://localhost
+echo - Outro dispositivo:    http://!ip!
 
 REM Inicia o servidor
 call npm start
