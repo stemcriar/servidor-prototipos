@@ -38,13 +38,11 @@ for /f "tokens=2 delims=:" %%A in ('ipconfig ^| findstr /I "IPv4"') do (
     set "ip=!ip:~1!"
 )
 
-echo Acesse o servidor em:
-echo - Neste computador:     http://localhost
-echo - Outro dispositivo:    http://!ip!
+echo Acesse o servidor em:  http://!ip!
 
 REM Abre o navegador
 timeout /t 2 /nobreak >nul
-start http://localhost
+start http://!ip!
 
 REM Inicia o servidor
 call npm start
