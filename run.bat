@@ -4,7 +4,6 @@ REM Script para iniciar o servidor STEM Criar
 echo.
 echo [*] Verificando dependencias...
 
-REM Verificando Node.js
 where node >nul 2>nul
 if errorlevel 1 (
     echo [X] Node.js nao encontrado. Por favor, instale Node.js
@@ -13,7 +12,8 @@ if errorlevel 1 (
     exit /b
 )
 
-REM Verificando node_modules\
+cd server
+
 if not exist "node_modules\" (
     echo [!] node_modules nao encontrado!
     echo [*] Instalando dependencias...
@@ -40,9 +40,7 @@ for /f "tokens=2 delims=:" %%A in ('ipconfig ^| findstr /I "IPv4"') do (
 
 echo Acesse o servidor em:  http://!ip!
 
-REM Abre o navegador
 timeout /t 2 /nobreak >nul
 start http://!ip!
 
-REM Inicia o servidor
 call npm start
