@@ -8,8 +8,8 @@ Para rodar o servidor:
 
 2. Descompacte a pasta baixada: `servidor-stem-criar-main`;
 
-3. Abra a pasta e procure o arquivo `run`
+3. Abra a pasta e procure o arquivo `run`;
 
-4. Clique duas vezes neste arquivo `run`
+4. Clique duas vezes neste arquivo `run`;
 
-5. Em poucos segundos, o **Servidor STEM Criar** abrirá em seu navegador
+5. Em poucos segundos, o **Servidor STEM Criar** abrirá em seu navegador.
