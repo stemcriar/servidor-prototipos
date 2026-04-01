@@ -6,7 +6,7 @@ Para rodar o servidor:
 
 1. Baixe o .zip;
 
-2. Descompacte a pasta baixada:`servidor-prototipos-main`;
+2. Descompacte a pasta baixada: `servidor-stem-criar-main`;
 
 3. Abra a pasta e procure o arquivo `run`
 
