@@ -7,6 +7,8 @@ Este repositório armazena o código do Servidor de controle dos Protótipos des
 1. Baixe o arquivo .zip no link: https://github.com/stemcriar/servidor-stem-criar/archive/refs/tags/1.0.zip
 
 <details>
+<summary>Veja mais</summary>
+
 <div align="center">
   <img src="img/Passo1.gif" alt="Passo 1" width="750">
 </div>
@@ -16,6 +18,7 @@ Este repositório armazena o código do Servidor de controle dos Protótipos des
 2. Descompacte o arquivo baixado
 
 <details>
+<summary>Veja mais</summary>
 <div align="center">
   <img src="img/Passo2.gif" alt="Passo 2" width="750">
 </div>
@@ -25,6 +28,7 @@ Este repositório armazena o código do Servidor de controle dos Protótipos des
 3. Abra a pasta e clique duas vezes no arquivo `run`
 
 <details>
+<summary>Veja mais</summary>
 <div align="center">
   <img src="img/Passo3.gif" alt="Passo 3" width="750">
 </div>
@@ -33,11 +37,9 @@ Este repositório armazena o código do Servidor de controle dos Protótipos des
 
 4. Em poucos segundos, o **Servidor STEM Criar** abrirá em seu navegador
 
-<details>
 <div align="center">
   <img src="img/Passo4.png" alt="Passo 4" width="750">
 </div>
-</details>
 
 ---
 
