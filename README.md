@@ -10,7 +10,7 @@ Este repositório armazena o código do Servidor de controle dos Protótipos des
 <summary>Veja mais</summary>
 
 <div align="center">
-  <img src="img/Passo1.gif" alt="Passo 1" width="750">
+  <img src="img/Passo1.gif" alt="Passo 1" width="800">
 </div>
 </details>
 
@@ -20,7 +20,7 @@ Este repositório armazena o código do Servidor de controle dos Protótipos des
 <details>
 <summary>Veja mais</summary>
 <div align="center">
-  <img src="img/Passo2.gif" alt="Passo 2" width="750">
+  <img src="img/Passo2.gif" alt="Passo 2" width="800">
 </div>
 </details>
 
@@ -30,7 +30,7 @@ Este repositório armazena o código do Servidor de controle dos Protótipos des
 <details>
 <summary>Veja mais</summary>
 <div align="center">
-  <img src="img/Passo3.gif" alt="Passo 3" width="750">
+  <img src="img/Passo3.gif" alt="Passo 3" width="800">
 </div>
 </details>
 
@@ -38,7 +38,7 @@ Este repositório armazena o código do Servidor de controle dos Protótipos des
 4. Em poucos segundos, o **Servidor STEM Criar** abrirá em seu navegador
 
 <div align="center">
-  <img src="img/Passo4.png" alt="Passo 4" width="750">
+  <img src="img/Passo4.png" alt="Passo 4" width="800">
 </div>
 
 ---
@@ -53,6 +53,13 @@ Antes da primeira vez inicializando o Servidor no seu computador, será necessá
 
 3. Siga as instruções de instalação
 
-4. Após instalado, pode seguir para o passo a passo: [Para rodar o Servidor](#para-rodar-o-servidor)
+<details>
+<summary>Veja mais</summary>
+<div align="center">
+  <img src="img/Passo0.gif" alt="Passo 0" width="800">
+</div>
+</details>
 
-> OBS: Essa etapa só precisa ser feita uma vez no seu computador
+4. Após instalado, siga para o passo a passo: [Para rodar o Servidor](#para-rodar-o-servidor) acima ☝️
+
+> OBS: Essa etapa só precisa ser feita **uma vez** no seu computador
