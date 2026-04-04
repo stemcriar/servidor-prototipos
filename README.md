@@ -4,6 +4,8 @@ Este repositório armazena o código do Servidor de controle dos Protótipos des
 
 ## Para rodar o Servidor
 
+> OBS: Caso seja a primeira vez rodando o Servidor no seu computador, veja: [Na primeira instalação](#na-primeira-instalação)
+
 1. Baixe o arquivo .zip no link: https://github.com/stemcriar/servidor-stem-criar/archive/refs/tags/1.0.zip
 
 <details>
@@ -60,6 +62,6 @@ Antes da primeira vez inicializando o Servidor no seu computador, será necessá
 </div>
 </details>
 
-4. Após instalado, siga para o passo a passo: [Para rodar o Servidor](#para-rodar-o-servidor) acima ☝️
+4. Após instalado, siga para o passo a passo: [Para rodar o Servidor](#para-rodar-o-servidor)
 
 > OBS: Essa etapa só precisa ser feita **uma vez** no seu computador
