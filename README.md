@@ -1,4 +1,4 @@
-# Servidor Protótipos STEM Criar
+# Servidor STEM Criar
 
 Este repositório armazena o código do Servidor de controle dos Protótipos desenvolvidos pelo time Stem Criar.
 
