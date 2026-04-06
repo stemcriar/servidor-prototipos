@@ -36,7 +36,7 @@ Siga os passos abaixo toda vez que desejar iniciar o Servidor para controlar os 
 2. Encontre o arquivo baixado em seu computador, clique com o botão direito e selecione a opção para extrair/descompactar a pasta.
 3. Abra a pasta descompactada e clique duas vezes no arquivo `run`.
 4. Uma tela preta (terminal) se abrirá carregando as configurações e, em poucos segundos, o **Servidor STEM Criar** abrirá automaticamente em seu navegador padrão. Caso o Servidor não abra, veja [Possíveis Erros¹](#1-o-servidor-não-abre-após-clicar-no-run).
-5. Com o Servidor aberto com sucesso, o próximo passo é conectar os Protótipos a ele. Consulte o [Manual de Configuração dos Protótipos](https://github.com/stemcriar/codigo-esp-prototipos) para realizar essa integração.
+5. Com o Servidor aberto com sucesso, o próximo passo é conectar os Protótipos a ele. Consulte o [Manual de Configuração dos Protótipos](https://github.com/stemcriar/codigo-esp-prototipos/tree/main?tab=readme-ov-file#manual-de-configura%C3%A7%C3%A3o-dos-prot%C3%B3tipos) para realizar essa integração.
 
 <details>
 <summary>Veja mais</summary>
@@ -62,4 +62,4 @@ Siga os passos abaixo toda vez que desejar iniciar o Servidor para controlar os 
 
 ### 3. A tela do Servidor abriu, mas nenhum Protótipo aparece.
 * **Causa:** Os Protótipos ainda não foram configurados para buscar este Servidor ou estão em redes diferentes.
-* **Solução:** Certifique-se de que o Protótipo e o computador estão na mesma rede Wi-Fi. Siga o [Manual de Configuração dos Protótipos](https://github.com/stemcriar/codigo-esp-prototipos) para apontar o IP correto do Servidor para o robô.
+* **Solução:** Certifique-se de que o Protótipo e o computador estão na mesma rede Wi-Fi. Siga o [Manual de Configuração dos Protótipos](https://github.com/stemcriar/codigo-esp-prototipos/tree/main?tab=readme-ov-file#manual-de-configura%C3%A7%C3%A3o-dos-prot%C3%B3tipos) para apontar o IP correto do Servidor para o robô.
