@@ -21,7 +21,9 @@ Antes da primeira vez inicializando o Servidor no seu computador, será necessá
 
 <details>
 <summary>Veja o vídeo</summary>
-<iframe width="560" height="315" src="https://www.youtube.com/embed/71gGInbEiNk?si=uSvtu6Co0mIOnQRW" title="YouTube video player" frameborder="0" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share" referrerpolicy="strict-origin-when-cross-origin" allowfullscreen></iframe>
+  
+[![Cenário 1 - Manual de Configuração dos Protótipos STEM Criar](https://img.youtube.com/vi/71gGInbEiNk/0.jpg)](https://www.youtube.com/watch?v=71gGInbEiNk)
+
 </details>
 
 ---
@@ -37,8 +39,10 @@ Siga os passos abaixo toda vez que desejar iniciar o Servidor para controlar os 
 5. Com o Servidor aberto com sucesso, o próximo passo é conectar os Protótipos a ele. Consulte o [Manual de Configuração dos Protótipos](https://github.com/stemcriar/codigo-esp-prototipos/tree/main?tab=readme-ov-file#manual-de-configura%C3%A7%C3%A3o-dos-prot%C3%B3tipos) para realizar essa integração.
 
 <details>
-<summary>Veja mais</summary>
-<iframe width="560" height="315" src="https://www.youtube.com/embed/QSdA-0703xY?si=W2kDX44QHeR9x5Fh" title="YouTube video player" frameborder="0" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share" referrerpolicy="strict-origin-when-cross-origin" allowfullscreen></iframe>
+<summary>Veja o vídeo</summary>
+
+[![Cenário 2 - Manual de Configuração dos Protótipos STEM Criar](https://img.youtube.com/vi/QSdA-0703xY/0.jpg)](https://www.youtube.com/watch?v=QSdA-0703xY)
+
 </details>
 
 ---
