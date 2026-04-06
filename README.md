@@ -45,6 +45,15 @@ Siga os passos abaixo toda vez que desejar iniciar o Servidor para controlar os 
 
 </details>
 
+## Servidor Aberto
+
+Exemplo da tela do Servidor:
+
+<div align="center">
+  <img src="img/ImgServidor.png" alt="Imagem do Servidor Aberto" width="800">
+</div>
+
+
 ---
 
 ## Possíveis Erros
