@@ -3,8 +3,9 @@
 Este manual apresenta o passo a passo detalhado para instalar e rodar o Servidor de controle dos Protótipos do STEM Criar.
 
 > **IMPORTANTE:**
-> 1. Caso seja a sua primeira vez rodando o Servidor neste computador, você deve obrigatoriamente realizar os passos da seção [Cenário 1. Na primeira instalação](#cenário-1-na-primeira-instalação).
-> 2. O computador (onde o Servidor está rodando), o seu celular/tablet de controle e o Protótipo **DEVEM estar todos conectados na mesma rede Wi-Fi**.
+> 1. Caso o Servidor já esteja rodando e queira configurar os Protótipos, veja o [Manual de Configuração dos Protótipos](https://github.com/stemcriar/codigo-esp-prototipos/tree/main?tab=readme-ov-file#manual-de-configura%C3%A7%C3%A3o-dos-prot%C3%B3tipos).
+> 2. Caso seja a sua primeira vez rodando o Servidor neste computador, você deve obrigatoriamente realizar os passos da seção [Cenário 1. Na primeira instalação](#cenário-1-na-primeira-instalação).
+> 3. O computador (onde o Servidor está rodando), o seu celular/tablet de controle e o Protótipo **DEVEM estar todos conectados na mesma rede Wi-Fi**.
 
 ---
 
