@@ -20,10 +20,8 @@ Antes da primeira vez inicializando o Servidor no seu computador, será necessá
 > OBS: Este Cenário só precisa ser feito uma vez em seu computador.
 
 <details>
-<summary>Veja mais</summary>
-<div align="center">
-  <img src="img/Cenario1.gif" alt="Passo a passo da instalação do Node" width="800">
-</div>
+<summary>Veja o vídeo</summary>
+<iframe width="560" height="315" src="https://www.youtube.com/embed/71gGInbEiNk?si=uSvtu6Co0mIOnQRW" title="YouTube video player" frameborder="0" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share" referrerpolicy="strict-origin-when-cross-origin" allowfullscreen></iframe>
 </details>
 
 ---
@@ -40,9 +38,7 @@ Siga os passos abaixo toda vez que desejar iniciar o Servidor para controlar os 
 
 <details>
 <summary>Veja mais</summary>
-<div align="center">
-  <img src="img/Cenario2.gif" alt="Rodando o Servidor" width="800">
-</div>
+<iframe width="560" height="315" src="https://www.youtube.com/embed/QSdA-0703xY?si=W2kDX44QHeR9x5Fh" title="YouTube video player" frameborder="0" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share" referrerpolicy="strict-origin-when-cross-origin" allowfullscreen></iframe>
 </details>
 
 ---
