@@ -54,7 +54,7 @@ function searchESPs() {
                   "
                 >
                 <img src="./images/index/robotic-arm.svg" />
-                  <p>Braço robótico<span>ID: ${esp.id}</span></p>
+                  <p>Braço robótico<span>${esp.name}</span></p>
                 </a>
               </div>
               
@@ -77,7 +77,7 @@ function searchESPs() {
                   "
                 >
                   <img src="./images/index/car.svg" />
-                  <p>Carrinho<span>ID: ${esp.id}</span></p>
+                  <p>Carrinho<span>${esp.name}</span></p>
                 </a>
               </div>`;
           }

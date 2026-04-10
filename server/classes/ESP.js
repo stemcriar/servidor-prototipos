@@ -1,12 +1,13 @@
 var moment = require('moment')
 
 class Esp {
-    constructor(connection, id, status, type){
+    constructor(connection, id, status, type, name){
       this.connection = connection;
       this.id = id;
       this.status = status;
       this.taken;
       this.type = type
+      this.name = name
     };
 
     static heartbeat(wsObject) {

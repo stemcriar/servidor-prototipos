@@ -73,8 +73,10 @@ wss.on('connection', function connection(ws, request) {
     if(messageJson['start'] == "ESP_on"  && messageJson.espType){ // Indica que um novo esp entrou no servidor
 
       var id = request.socket.remoteAddress.toString().split(".")[3];
+
+      var nomeDeExibicao = messageJson.espName || "ID: " + id;
       
-      global.esps.push(new Esp(ws, id, true, messageJson.espType));
+      global.esps.push(new Esp(ws, id, true, messageJson.espType, nomeDeExibicao));
 
       console.log(moment().format('MMMM Do YYYY, h:mm:ss a'), " || ESP ", global.esps[global.esps.length-1].type + 
                                                                       " id: " + global.esps[global.esps.length-1].id)
