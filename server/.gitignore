@@ -17,6 +17,7 @@ yarn-error.log*
 .env
 .env.local
 .env.*.local
+certs/
 
 # Sistema operacional
 Thumbs.db

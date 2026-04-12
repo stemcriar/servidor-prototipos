@@ -1,68 +1,80 @@
 #!/usr/bin/env node
 
-/**
- * Module dependencies.
- */
-
 var app = require('../app');
 var debug = require('debug')('nodetest1:server');
 var http = require('http');
-
-/**
- * Get port from environment and store in Express.
- */
+var https = require('https');
+var fs = require('fs');
+var path = require('path');
 
 var port = normalizePort(process.env.PORT || '80');
+var httpsPort = normalizePort(process.env.HTTPS_PORT || '443');
 app.set('port', port);
 
-/**
- * Create HTTP server.
- */
+var certsDir = path.join(__dirname, '..', 'certs');
+var keyPath = path.join(certsDir, 'key.pem');
+var certPath = path.join(certsDir, 'cert.pem');
 
-var server = http.createServer(app);
+async function ensureCerts() {
+  if (fs.existsSync(certPath) && fs.existsSync(keyPath)) return;
 
-/**
- * Listen on provided port, on all network interfaces.
- */
+  // console.log('Gerando certificado auto-assinado...');
+  if (!fs.existsSync(certsDir)) fs.mkdirSync(certsDir, { recursive: true });
 
-server.listen(port);
-server.on('error', onError);
-server.on('listening', onListening);
+  var selfsigned = require('selfsigned');
+  var attrs = [{ name: 'commonName', value: 'STEM-CRIAR' }];
+  var pems = await selfsigned.generate(attrs, {
+    days: 3650,
+    keySize: 2048,
+    algorithm: 'sha256',
+  });
 
-/**
- * Normalize a port into a number, string, or false.
- */
+  fs.writeFileSync(keyPath, pems.private);
+  fs.writeFileSync(certPath, pems.cert);
+  // console.log('Certificado gerado em', certsDir);
+}
+
+async function start() {
+  await ensureCerts();
+
+  var sslOptions = {
+    key: fs.readFileSync(keyPath),
+    cert: fs.readFileSync(certPath),
+  };
+
+  var server = http.createServer(app);
+  server.listen(port);
+  server.on('error', function(err) { onError(err, port); });
+  server.on('listening', function() {
+    // console.log('HTTP rodando na porta ' + port);
+  });
+
+  var httpsServer = https.createServer(sslOptions, app);
+  httpsServer.listen(httpsPort);
+  httpsServer.on('error', function(err) { onError(err, httpsPort); });
+  httpsServer.on('listening', function() {
+    // console.log('HTTPS rodando na porta ' + httpsPort);
+  });
+
+  var { startWss } = require('../app');
+  if (typeof startWss === 'function') startWss(sslOptions);
+}
+
+start().catch(function(err) {
+  console.error('Falha ao iniciar servidor:', err);
+  process.exit(1);
+});
 
 function normalizePort(val) {
   var port = parseInt(val, 10);
-
-  if (isNaN(port)) {
-    // named pipe
-    return val;
-  }
-
-  if (port >= 0) {
-    // port number
-    return port;
-  }
-
+  if (isNaN(port)) return val;
+  if (port >= 0) return port;
   return false;
 }
 
-/**
- * Event listener for HTTP server "error" event.
- */
-
-function onError(error) {
-  if (error.syscall !== 'listen') {
-    throw error;
-  }
-
-  var bind = typeof port === 'string'
-    ? 'Pipe ' + port
-    : 'Port ' + port;
-
-  // handle specific listen errors with friendly messages
+function onError(error, p) {
+  if (error.syscall !== 'listen') throw error;
+  var bind = 'Port ' + p;
   switch (error.code) {
     case 'EACCES':
       console.error(bind + ' requires elevated privileges');
@@ -75,16 +87,4 @@ function onError(error) {
     default:
       throw error;
   }
-}
-
-/**
- * Event listener for HTTP server "listening" event.
- */
-
-function onListening() {
-  var addr = server.address();
-  var bind = typeof addr === 'string'
-    ? 'pipe ' + addr
-    : 'port ' + addr.port;
-  debug('Listening on ' + bind);
 }

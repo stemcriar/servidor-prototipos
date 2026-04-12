@@ -22,13 +22,19 @@ function str2ab(str) {
   return buf;
 }
 
-// A comunicação dos protótipos se dá através de um websocket que é aberto na porta 1801
 var WebSocket = require('ws');
+var https = require('https');
 
-const wss = new WebSocket.Server({
-  port: 1801,
-});
+var wss = new WebSocket.Server({ port: 1801 });
 
+function startWss(sslOptions) {
+  var sslServer = https.createServer(sslOptions);
+  var wssSecure = new WebSocket.Server({ server: sslServer });
+  sslServer.listen(1802, function () {
+    // console.log('WSS (seguro) rodando na porta 1802');
+  });
+  wssSecure.on('connection', handleConnection);
+}
 
 var Esp = require("./classes/ESP.js");
 var ping  = Esp.ping;
@@ -47,58 +53,43 @@ wss.on('close', function close() {
   clearInterval(interval);
 });
 
-// os 3 arrays tomam conta dos esps e páginas atualmente conectados ao servidor
-//assim como da "sala" de bate-papo onde eles ficam
-
 global.esps = [];
 global.pages = [];
 global.rooms = [];
 
-wss.on('connection', function connection(ws, request) {
-
-  ws.on('pong', function(){ //Quando receber "pong" pelo websocket, o dispositivo continua online
+function handleConnection(ws, request) {
+  ws.on('pong', function(){
     heartbeat(ws);
     heartbeatPage(ws);
   });
 
   ws.on('message', function incoming(message) {
-
     try {
-      messageJson = JSON.parse(message); // converte a mensagem string em JSON
+      messageJson = JSON.parse(message);
     }
     catch(err){
       console.log("Erro: ", err);
     }
 
-    if(messageJson['start'] == "ESP_on"  && messageJson.espType){ // Indica que um novo esp entrou no servidor
-
+    if(messageJson['start'] == "ESP_on"  && messageJson.espType){
       var id = request.socket.remoteAddress.toString().split(".")[3];
-
       var nomeDeExibicao = messageJson.espName || "ID: " + id;
-      
       global.esps.push(new Esp(ws, id, true, messageJson.espType, nomeDeExibicao));
-
       console.log(moment().format('MMMM Do YYYY, h:mm:ss a'), " || ESP ", global.esps[global.esps.length-1].type + 
                                                                       " id: " + global.esps[global.esps.length-1].id)
     };
 
-    if(messageJson['start'] == "page_on"){ // Indica que uma nova página entrou no servidor
-
+    if(messageJson['start'] == "page_on"){
       var id = request.socket.remoteAddress.toString().split(".")[3];
-
       global.pages.push(new Page(ws, id, messageJson['to'], true));
-
       lastPage = global.pages[global.pages.length-1];
-
-      //Verifica com qual ESP a página quer se comunicar e coloca os 2 em uma sala de bate-papo 
       global.esps.forEach(esp => {
         if (esp.id == lastPage.pageEsp){
           global.rooms.push({"pageConnection": lastPage.connection, "espConnection": esp.connection});
-          esp.taken = true; // Informa que este ESP já está sendo usado por uma página
+          esp.taken = true;
           console.log("The page ", lastPage.id, "is communicating with ESP of id:", esp.id);
         };
       });
-      //console.log(global.rooms);
     };
 
     global.rooms.forEach(room => {
@@ -110,10 +101,11 @@ wss.on('connection', function connection(ws, request) {
       };
     });
 
-  //esps.forEach(esp => esp.connection.send(message));
   console.log('received: %s', message);
   });
-});
+}
+
+wss.on('connection', handleConnection);
 
 var app = express();
 
@@ -149,3 +141,4 @@ app.use(function(err, req, res, next) {
 });
 
 module.exports = app;
+module.exports.startWss = startWss;
