@@ -7,25 +7,12 @@
       name="viewport"
     />
 
-    <title>Manipulador Stem</title>
+    <title>Manipulador</title>
 
     <link
       rel="icon"
-      type="image/png"
-      sizes="32x32"
-      href="images/favicon-32x32.png"
-    />
-    <link
-      rel="icon"
-      type="image/png"
-      sizes="96x96"
-      href="images/favicon-96x96.png"
-    />
-    <link
-      rel="icon"
-      type="image/png"
-      sizes="16x16"
-      href="images/favicon-16x16.png"
+      type="image/svg+xml"
+      href="images/index/robotic-arm.svg"
     />
 
     <link rel="preconnect" href="https://fonts.googleapis.com" />
@@ -35,10 +22,13 @@
       rel="stylesheet"
     />
     <link rel="stylesheet" href="../stylesheets/manipulador_style.css" />
+
+    <script async src="https://cdn.jsdelivr.net/npm/@mediapipe/drawing_utils/drawing_utils.js" crossorigin="anonymous"></script>
+    <script async src="https://cdn.jsdelivr.net/npm/@mediapipe/hands/hands.js" crossorigin="anonymous"></script>
   </head>
 
   <body>
-    <header>
+    <header class="app-header">
       <div class="header-menu">
         <a href="./" id="back-button"></a>
         <img
@@ -54,28 +44,65 @@
       <section class="control-area">
         <div class="joystick-wrapper" id="joystick-left-wrapper">
           <canvas class="canvas_style" id="canvasLeft"></canvas>
-          <span class="control-description">Antebraço / Punho</span>
+          <span class="control-description">Base / Braço</span>
         </div>
 
         <div class="center-controls">
           <div class="image-container">
             <img src="../images/manipulador/Robot_Arm_III.png" alt="Braço robótico" />
           </div>
-          <button
-            type="button"
-            onclick="switchEffector()"
-            class="switch-claw disabled"
-          ></button>
+          <div class="button-container">
+            <button
+              type="button"
+              id="camera-activate-btn"
+              class="camera-activate-btn"
+              onclick="CameraControl.open()"
+              title="Controle por Câmera"
+            >
+              <svg viewBox="0 0 24 24" width="24" height="24" fill="currentColor">
+                <path d="M17 10.5V7c0-.55-.45-1-1-1H4c-.55 0-1 .45-1 1v10c0 .55.45 1 1 1h12c.55 0 1-.45 1-1v-3.5l4 4v-11l-4 4z"/>
+              </svg>
+            </button>
+            <button
+              type="button"
+              onclick="switchEffector()"
+              class="switch-claw disabled"
+            ></button>
+          </div>
         </div>
 
         <div class="joystick-wrapper" id="joystick-right-wrapper">
           <canvas class="canvas_style" id="canvasRight"></canvas>
-          <span class="control-description">Base / Braço</span>
+          <span class="control-description">Antebraço / Punho</span>
         </div>
       </section>
     </main>
 
+    <div id="camera-modal" class="camera-modal hidden">
+      <header class="app-header" style="position: absolute; top: 0; left: 0; z-index: 10; width: 100vw;">
+        <div class="header-menu">
+          <img
+            src="/images/manipulador/Logo acadstem.png"
+            alt="Logo academia stem"
+            id="logo"
+          />
+          <h1>Visão Computacional</h1>
+        </div>
+      </header>
+      <div class="camera-video-container">
+        <div class="camera-canvas-wrapper">
+          <button class="camera-close-btn" onclick="CameraControl.close()" title="Fechar">✕</button>
+          <video id="camera-video" playsinline></video>
+          <canvas id="camera-canvas"></canvas>
+          <div id="camera-loading" class="camera-loading">
+            <div class="camera-spinner"></div>
+            <span>Carregando modelo de IA...</span>
+          </div>
+        </div>
+      </div>
+    </div>
     <footer></footer>
     <script src="../javascripts/manipulador_script.js"></script>
+    <script src="../javascripts/manipulador_camera.js"></script>
   </body>
 </html>
