@@ -17,7 +17,7 @@ cd server
 if not exist "node_modules\" (
     echo [!] node_modules nao encontrado!
     echo [*] Instalando dependencias...
-    call npm install
+    call cmd /c "npm install"
     if errorlevel 1 (
         echo [X] Erro ao instalar dependencias!
         pause
@@ -25,7 +25,10 @@ if not exist "node_modules\" (
     )
     echo [OK] Dependencias instaladas!
 ) else (
-    echo [OK] Dependencias OK!
+    REM Força uma verificação rápida para garantir o pacote selfsigned, etc.
+    echo [*] Verificando updates de dependencias...
+    call cmd /c "npm install"
+    echo [OK] Dependencias checadas e OK!
 )
 
 echo.
@@ -38,9 +41,10 @@ for /f "tokens=2 delims=:" %%A in ('ipconfig ^| findstr /I "IPv4"') do (
     set "ip=!ip:~1!"
 )
 
-echo Acesse o servidor em:  http://!ip!
+echo Acesse o servidor via HTTPS (necessario para a camera): https://!ip!
+echo Para acessar via HTTP normal (sem camera): http://!ip!
 
 timeout /t 2 /nobreak >nul
-start http://!ip!
+start https://!ip!
 
 call npm start
