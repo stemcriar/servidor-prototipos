@@ -1,12 +1,54 @@
 // =====================================================================================
-// WEBSOCKET CONNECTION
+// SERVO STATE (shared between joystick and camera modules)
 // =====================================================================================
 
-var connection = new WebSocket("ws://" + location.hostname + ":1801/", [
-  "arduino",
-]);
+var servoAngles = {
+  base: 90,
+  braco: 60,
+  antebraco: 50,
+  punho: 140,
+  garra: 0,
+};
+
+var SERVO_DEFAULTS = {
+  base: 90,
+  braco: 60,
+  antebraco: 50,
+  punho: 140,
+  garra: 0,
+};
+
+var SERVO_STEP = 3;
+
+function sendServo(name, angle) {
+  angle = Math.max(0, Math.min(180, Math.round(angle)));
+  servoAngles[name] = angle;
+  if (connection.readyState === WebSocket.OPEN) {
+    connection.send(JSON.stringify({ from: name, angle: angle }));
+  }
+}
+
+function resetServos() {
+  Object.keys(SERVO_DEFAULTS).forEach(function (key) {
+    servoAngles[key] = SERVO_DEFAULTS[key];
+    sendServo(key, SERVO_DEFAULTS[key]);
+  });
+}
+
+// =====================================================================================
+// WEBSOCKET CONNECTION (auto-detect ws/wss)
+// =====================================================================================
+
+var wsProtocol = location.protocol === "https:" ? "wss" : "ws";
+var wsPort = location.protocol === "https:" ? "1802" : "1801";
+var connection = new WebSocket(
+  wsProtocol + "://" + location.hostname + ":" + wsPort + "/",
+  ["arduino"]
+);
+
 connection.onopen = function () {
   connection.send(startPage());
+  resetServos();
 };
 connection.onerror = function (error) {
   console.log("WebSocket Error ", error);
@@ -20,7 +62,6 @@ connection.onclose = function () {
 };
 
 function receiveData(data) {
-  // placeholder for future feedback from manipulator
   console.log("Mensagem recebida: ", data);
 }
 
@@ -62,57 +103,53 @@ function switchEffector() {
   if (button.classList.contains("disabled")) {
     button.classList.add("enabled");
     button.classList.remove("disabled");
+    servoAngles.garra = 90;
   } else {
     button.classList.add("disabled");
     button.classList.remove("enabled");
+    servoAngles.garra = 0;
   }
 
-  var command = { from: "effector", state: "0" };
-  commandJson = JSON.stringify(command);
-  connection.send(commandJson);
+  sendServo("garra", servoAngles.garra);
 }
 
 // =====================================================================================
-// JOYSTICK IMPLEMENTATION
+// JOYSTICK IMPLEMENTATION (angle-based)
 // =====================================================================================
 
-// Creates a joystick controller on a given canvas element.
-// name: "joystickL" or "joystickR" — determines the 'from' field in WebSocket messages
-function createJoystick(canvasId, name) {
+// servoXName/servoYName: which servos this joystick controls
+// invertX/invertY: flip direction if needed for intuitive control
+function createJoystick(canvasId, servoXName, servoYName, invertX, invertY) {
   var canvas = document.getElementById(canvasId);
   var ctx = canvas.getContext("2d");
 
-  var radius = 60;        // outer circle radius (will be recalculated)
-  var innerRadius = 30;   // joystick ball radius (will be recalculated)
-  var borderPad = 22;     // space for the border stroke
+  var radius = 60;
+  var innerRadius = 30;
+  var borderPad = 22;
 
-  var x_orig, y_orig;     // center of the joystick
+  var x_orig, y_orig;
   var paint = false;
-  var activeTouchId = null; // tracks which finger is controlling this joystick
+  var activeTouchId = null;
 
-  // Interval that sends direction while joystick is held
   var sendInterval = null;
   var currentDirX = 0;
   var currentDirY = 0;
 
   function resize() {
-    // Collapse canvas so it doesn't influence the flex container sizing
     canvas.width = 0;
     canvas.height = 0;
 
     var wrapper = canvas.parentElement;
-    var labelEl = wrapper.querySelector('.control-description');
-    var labelHeight = labelEl ? (labelEl.offsetHeight + 6) : 22;
+    var labelEl = wrapper.querySelector(".control-description");
+    var labelHeight = labelEl ? labelEl.offsetHeight + 6 : 22;
 
     var availW = wrapper.clientWidth;
     var availH = wrapper.clientHeight - labelHeight;
 
-    // Use the smaller dimension as the max diameter
     var diameter = Math.min(availW, availH);
     if (diameter < 80) diameter = 80;
 
-    // Calculate radius leaving room for the border stroke
-    radius = (diameter / 2) - borderPad;
+    radius = diameter / 2 - borderPad;
     if (radius < 25) radius = 25;
     innerRadius = radius / 2;
 
@@ -154,28 +191,39 @@ function createJoystick(canvasId, name) {
     drawJoystickBall(ballX, ballY);
   }
 
-  // Convert relative position to direction: -1, 0, or 1
   function toDirection(value, deadzone) {
     if (value > deadzone) return 1;
     if (value < -deadzone) return -1;
     return 0;
   }
 
-  function sendDirection(dirX, dirY) {
-    var command = {
-      from: name,
-      state: dirX + "," + dirY,
-    };
-    var commandJson = JSON.stringify(command);
-    console.log(commandJson);
-    connection.send(commandJson);
+  function applyStep() {
+    var changed = false;
+
+    if (currentDirX !== 0) {
+      var stepX = (invertX ? -1 : 1) * currentDirX * SERVO_STEP;
+      var newAngleX = Math.max(0, Math.min(180, servoAngles[servoXName] + stepX));
+      if (newAngleX !== servoAngles[servoXName]) {
+        sendServo(servoXName, newAngleX);
+        changed = true;
+      }
+    }
+
+    if (currentDirY !== 0) {
+      var stepY = (invertY ? -1 : 1) * currentDirY * SERVO_STEP;
+      var newAngleY = Math.max(0, Math.min(180, servoAngles[servoYName] + stepY));
+      if (newAngleY !== servoAngles[servoYName]) {
+        sendServo(servoYName, newAngleY);
+        changed = true;
+      }
+    }
   }
 
   function startContinuousSend() {
     if (sendInterval) return;
     sendInterval = setInterval(function () {
       if (paint && (currentDirX !== 0 || currentDirY !== 0)) {
-        sendDirection(currentDirX, currentDirY);
+        applyStep();
       }
     }, 50);
   }
@@ -234,7 +282,6 @@ function createJoystick(canvasId, name) {
     var x_relative = ballX - x_orig;
     var y_relative = ballY - y_orig;
 
-    // Deadzone is 30% of radius
     var deadzone = radius * 0.3;
     currentDirX = toDirection(x_relative, deadzone);
     currentDirY = toDirection(y_relative, deadzone);
@@ -247,9 +294,6 @@ function createJoystick(canvasId, name) {
     currentDirY = 0;
     stopContinuousSend();
     redraw(x_orig, y_orig);
-
-    // Send a final stop command
-    sendDirection(0, 0);
   }
 
   // ===================== MOUSE EVENTS =====================
@@ -275,60 +319,75 @@ function createJoystick(canvasId, name) {
 
   // ===================== TOUCH EVENTS (multi-touch safe) =====================
 
-  canvas.addEventListener("touchstart", function (e) {
-    e.preventDefault();
-    // If this joystick is already being controlled by a finger, ignore new touches
-    if (activeTouchId !== null) return;
+  canvas.addEventListener(
+    "touchstart",
+    function (e) {
+      e.preventDefault();
+      if (activeTouchId !== null) return;
 
-    for (var i = 0; i < e.changedTouches.length; i++) {
-      var touch = e.changedTouches[i];
-      var coords = getCanvasCoords(touch.clientX, touch.clientY);
-      if (handleStart(coords.x, coords.y)) {
-        activeTouchId = touch.identifier;
-        break;
-      }
-    }
-  }, { passive: false });
-
-  canvas.addEventListener("touchmove", function (e) {
-    e.preventDefault();
-    if (activeTouchId === null) return;
-
-    for (var i = 0; i < e.changedTouches.length; i++) {
-      var touch = e.changedTouches[i];
-      if (touch.identifier === activeTouchId) {
+      for (var i = 0; i < e.changedTouches.length; i++) {
+        var touch = e.changedTouches[i];
         var coords = getCanvasCoords(touch.clientX, touch.clientY);
-        handleMove(coords.x, coords.y);
-        break;
+        if (handleStart(coords.x, coords.y)) {
+          activeTouchId = touch.identifier;
+          break;
+        }
       }
-    }
-  }, { passive: false });
+    },
+    { passive: false }
+  );
 
-  canvas.addEventListener("touchend", function (e) {
-    e.preventDefault();
-    if (activeTouchId === null) return;
+  canvas.addEventListener(
+    "touchmove",
+    function (e) {
+      e.preventDefault();
+      if (activeTouchId === null) return;
 
-    for (var i = 0; i < e.changedTouches.length; i++) {
-      var touch = e.changedTouches[i];
-      if (touch.identifier === activeTouchId) {
-        handleEnd();
-        break;
+      for (var i = 0; i < e.changedTouches.length; i++) {
+        var touch = e.changedTouches[i];
+        if (touch.identifier === activeTouchId) {
+          var coords = getCanvasCoords(touch.clientX, touch.clientY);
+          handleMove(coords.x, coords.y);
+          break;
+        }
       }
-    }
-  }, { passive: false });
+    },
+    { passive: false }
+  );
 
-  canvas.addEventListener("touchcancel", function (e) {
-    e.preventDefault();
-    if (activeTouchId === null) return;
+  canvas.addEventListener(
+    "touchend",
+    function (e) {
+      e.preventDefault();
+      if (activeTouchId === null) return;
 
-    for (var i = 0; i < e.changedTouches.length; i++) {
-      var touch = e.changedTouches[i];
-      if (touch.identifier === activeTouchId) {
-        handleEnd();
-        break;
+      for (var i = 0; i < e.changedTouches.length; i++) {
+        var touch = e.changedTouches[i];
+        if (touch.identifier === activeTouchId) {
+          handleEnd();
+          break;
+        }
       }
-    }
-  }, { passive: false });
+    },
+    { passive: false }
+  );
+
+  canvas.addEventListener(
+    "touchcancel",
+    function (e) {
+      e.preventDefault();
+      if (activeTouchId === null) return;
+
+      for (var i = 0; i < e.changedTouches.length; i++) {
+        var touch = e.changedTouches[i];
+        if (touch.identifier === activeTouchId) {
+          handleEnd();
+          break;
+        }
+      }
+    },
+    { passive: false }
+  );
 
   // ===================== INIT =====================
 
@@ -343,6 +402,8 @@ function createJoystick(canvasId, name) {
 // =====================================================================================
 
 window.addEventListener("load", function () {
-  createJoystick("canvasLeft", "joystickL");
-  createJoystick("canvasRight", "joystickR");
+  // Left joystick: X axis = base (servo0), Y axis = braco (servo1)
+  createJoystick("canvasLeft", "base", "braco", true, false);
+  // Right joystick: X axis = punho (servo3), Y axis = antebraco (servo2)
+  createJoystick("canvasRight", "punho", "antebraco", true, true);
 });
