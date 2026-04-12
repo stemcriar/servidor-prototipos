@@ -79,7 +79,6 @@ header {
     height: 100vh;
     position: fixed;
     overflow: hidden;
-    background-image: linear-gradient(rgb(1, 77, 143, 0), rgb(104, 171, 48, 0));
     background-attachment: fixed;
     font-family: "Rubik", sans-serif;
     font-weight: 400;
@@ -153,18 +152,5 @@ header {
   .canvas_style::selection,
   h1::selection {
     background: rgb(0, 0, 0, 0);
-  }
-
-  footer {
-    position: absolute;
-    bottom: 0;
-    height: 4rem;
-    width: 100vw;
-    background-image: linear-gradient(
-      to right,
-      rgb(104, 171, 48),
-      rgb(1, 77, 143)
-    );
-    clip-path: ellipse(70% 100% at 50% 100%);
   }
 }
