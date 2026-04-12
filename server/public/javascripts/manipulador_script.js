@@ -1,3 +1,7 @@
+// =====================================================================================
+// WEBSOCKET CONNECTION
+// =====================================================================================
+
 var connection = new WebSocket("ws://" + location.hostname + ":1801/", [
   "arduino",
 ]);
@@ -15,43 +19,9 @@ connection.onclose = function () {
   console.log("WebSocket connection closed");
 };
 
-let last = +new Date();
-
-function sendAngle(sliderValueID) {
-  var command = {
-    from: sliderValueID,
-    state: document.getElementById(sliderValueID).value,
-  };
-
-  commandJson = JSON.stringify(command);
-  console.log(commandJson);
-
-  const now = +new Date();
-  if (now - last > 50) {
-    last = now;
-    connection.send(commandJson);
-  }
-}
-
-function switchEffector() {
-  const button = document.querySelector(".switch-claw");
-
-  if (button.classList.contains("disabled")) {
-    button.classList.add("enabled");
-    button.classList.remove("disabled");
-  } else {
-    button.classList.add("disabled");
-    button.classList.remove("enabled");
-  }
-
-  var command = { from: "effector", state: "0" };
-  commandJson = JSON.stringify(command);
-  connection.send(commandJson);
-}
-
 function receiveData(data) {
-  var complete_data = "Mensagem: " + data;
-  document.getElementById("mensagem_manipulador").innerHTML = complete_data;
+  // placeholder for future feedback from manipulator
+  console.log("Mensagem recebida: ", data);
 }
 
 function startPage() {
@@ -82,369 +52,297 @@ function getCookie(cname) {
   return "";
 }
 
-// ======================================================================================
-// SLIDERS
+// =====================================================================================
+// EFFECTOR BUTTON
+// =====================================================================================
 
-class RangeSlider {
-  constructor(element, settings) {
-    this.settings = Object.assign(
-      {
-        clsCircular: "c-rng--circular",
-        clsCircularOutput: "c-rng--circular-output",
-        clsOutput: "c-rng__output",
-        clsOutputWrapper: "c-rng--output",
-        clsRangeTicks: "c-rng--ticks",
-        clsWrapper: "c-rng__wrapper",
-        offset: -90,
-        varPercent: "--rng-percent",
-        varPercentUpper: "--rng-percent-upper",
-        varThumb: "--rng-thumb-w",
-        varUnit: "--rng-unit",
-        varValue: "--rng-value",
-      },
-      stringToType(settings)
-    );
+function switchEffector() {
+  const button = document.querySelector(".switch-claw");
 
-    this.range = element;
-    this.initRange(this.range);
+  if (button.classList.contains("disabled")) {
+    button.classList.add("enabled");
+    button.classList.remove("disabled");
+  } else {
+    button.classList.add("disabled");
+    button.classList.remove("enabled");
   }
 
-  /**
-   * @function initRange
-   * @param {Node} range
-   * @description Initialize: Create elements, add eventListeners etc.
-   */
-  initRange(range) {
-    const circular = this.settings.range.includes("circular");
-    range.id = range.id || uuid();
+  var command = { from: "effector", state: "0" };
+  commandJson = JSON.stringify(command);
+  connection.send(commandJson);
+}
 
-    this.lower = this.settings.range.includes("upper")
-      ? range.parentNode.querySelector(`[data-range*="lower"]`)
-      : null;
-    this.max = parseInt(range.max, 10) || 100;
-    this.min = parseInt(range.min, 10);
-    this.multiplier = 100 / (this.max - this.min);
-    this.output =
-      this.settings.range.includes("output") || circular
-        ? document.createElement("output")
-        : null;
-    this.ticks = parseInt(range.dataset.ticks, 10);
-    this.upper = this.settings.range.includes("lower")
-      ? range.parentNode.querySelector(`[data-range*="upper"]`)
-      : null;
-    const isMulti = this.lower || this.upper;
-    this.wrapper = isMulti ? range.parentNode : document.createElement("div");
+// =====================================================================================
+// JOYSTICK IMPLEMENTATION
+// =====================================================================================
 
-    /* output */
-    if (this.output) {
-      this.output.className = circular
-        ? this.settings.clsCircularOutput
-        : this.settings.clsOutput;
-      this.output.for = range.id;
+// Creates a joystick controller on a given canvas element.
+// name: "joystickL" or "joystickR" — determines the 'from' field in WebSocket messages
+function createJoystick(canvasId, name) {
+  var canvas = document.getElementById(canvasId);
+  var ctx = canvas.getContext("2d");
 
-      if (isMulti) {
-        this.wrapper.insertBefore(this.output, range);
-      } else {
-        this.wrapper.classList.add(
-          circular ? this.settings.clsCircular : this.settings.clsOutputWrapper
-        );
-        this.wrapper.appendChild(this.output);
+  var radius = 60;        // outer circle radius (will be recalculated)
+  var innerRadius = 30;   // joystick ball radius (will be recalculated)
+  var borderPad = 22;     // space for the border stroke
+
+  var x_orig, y_orig;     // center of the joystick
+  var paint = false;
+  var activeTouchId = null; // tracks which finger is controlling this joystick
+
+  // Interval that sends direction while joystick is held
+  var sendInterval = null;
+  var currentDirX = 0;
+  var currentDirY = 0;
+
+  function resize() {
+    // Collapse canvas so it doesn't influence the flex container sizing
+    canvas.width = 0;
+    canvas.height = 0;
+
+    var wrapper = canvas.parentElement;
+    var labelEl = wrapper.querySelector('.control-description');
+    var labelHeight = labelEl ? (labelEl.offsetHeight + 6) : 22;
+
+    var availW = wrapper.clientWidth;
+    var availH = wrapper.clientHeight - labelHeight;
+
+    // Use the smaller dimension as the max diameter
+    var diameter = Math.min(availW, availH);
+    if (diameter < 80) diameter = 80;
+
+    // Calculate radius leaving room for the border stroke
+    radius = (diameter / 2) - borderPad;
+    if (radius < 25) radius = 25;
+    innerRadius = radius / 2;
+
+    var canvasSize = Math.floor((radius + borderPad) * 2);
+    canvas.width = canvasSize;
+    canvas.height = canvasSize;
+
+    x_orig = canvasSize / 2;
+    y_orig = canvasSize / 2;
+
+    drawBackground();
+    drawJoystickBall(x_orig, y_orig);
+  }
+
+  function drawBackground() {
+    ctx.beginPath();
+    ctx.arc(x_orig, y_orig, radius + (borderPad - 2), 0, Math.PI * 2, true);
+    ctx.fillStyle = "rgba(0, 0, 0, 0)";
+    ctx.lineWidth = 5;
+    ctx.strokeStyle = "#014D8F";
+    ctx.shadowBlur = 0;
+    ctx.fill();
+    ctx.stroke();
+  }
+
+  function drawJoystickBall(x, y) {
+    ctx.beginPath();
+    ctx.arc(x, y, innerRadius, 0, Math.PI * 2, true);
+    ctx.fillStyle = "#FFA200";
+    ctx.shadowColor = "#0000006B";
+    ctx.shadowBlur = 10;
+    ctx.fill();
+    ctx.shadowBlur = 0;
+  }
+
+  function redraw(ballX, ballY) {
+    ctx.clearRect(0, 0, canvas.width, canvas.height);
+    drawBackground();
+    drawJoystickBall(ballX, ballY);
+  }
+
+  // Convert relative position to direction: -1, 0, or 1
+  function toDirection(value, deadzone) {
+    if (value > deadzone) return 1;
+    if (value < -deadzone) return -1;
+    return 0;
+  }
+
+  function sendDirection(dirX, dirY) {
+    var command = {
+      from: name,
+      state: dirX + "," + dirY,
+    };
+    var commandJson = JSON.stringify(command);
+    console.log(commandJson);
+    connection.send(commandJson);
+  }
+
+  function startContinuousSend() {
+    if (sendInterval) return;
+    sendInterval = setInterval(function () {
+      if (paint && (currentDirX !== 0 || currentDirY !== 0)) {
+        sendDirection(currentDirX, currentDirY);
       }
-    }
-
-    /* wrapper */
-    if (!isMulti) {
-      range.parentNode.insertBefore(this.wrapper, range);
-      this.wrapper.appendChild(range);
-    }
-    if (range.dataset.modifier) {
-      this.wrapper.classList.add(range.dataset.modifier);
-    }
-
-    this.wrapper.classList.add(this.settings.clsWrapper);
-    this.wrapper.style.setProperty(
-      this.settings.varThumb,
-      getComputedStyle(range).getPropertyValue(this.settings.varThumb)
-    );
-
-    /* ticks */
-    if (this.ticks) {
-      const ticks = [...Array(this.ticks).keys()];
-      const svg = `
-				<svg class="${this.settings.clsRangeTicks}" width="100%" height="100%">
-				${ticks
-          .map((index) => {
-            return `<rect x="${
-              (100 / this.ticks) * index
-            }%" y="5" width="1" height="100%"></rect>`;
-          })
-          .join("")}
-				<rect x="100%" y="5" width="1" height="100%"></rect>
-			</svg>`;
-      this.wrapper.insertAdjacentHTML("afterbegin", svg);
-    }
-
-    /* circular */
-    if (circular) {
-      range.hidden = true;
-      const pointerMove = (event) => {
-        const actualSliderId = event.target.for;
-        const actualSlider = document.querySelector(`#${actualSliderId}`);
-
-        if (
-          this.verifyCircle(this.rotate(event.pageX, event.pageY)) -
-            Number(actualSlider.value) >
-          0
-        ) {
-          if (
-            this.verifyCircle(this.rotate(event.pageX, event.pageY)) -
-              Number(actualSlider.value) <
-            150
-          ) {
-            actualSlider.stepUp(1);
-            return this.updateCircle();
-          }
-        } else if (
-          this.verifyCircle(this.rotate(event.pageX, event.pageY)) -
-            Number(actualSlider.value) <
-          0
-        ) {
-          if (
-            this.verifyCircle(this.rotate(event.pageX, event.pageY)) -
-              Number(actualSlider.value) >
-            -150
-          ) {
-            actualSlider.stepDown(1);
-            return this.updateCircle();
-          }
-        }
-        // return this.updateCircle(this.rotate(event.pageX, event.pageY));
-      };
-
-      // to move the slider through the scroll
-      const sliderContainer1 = document.querySelector("#container-1");
-      const sliderContainer2 = document.querySelector("#container-2");
-      const sliderContainer3 = document.querySelector("#container-3");
-      const sliderContainer4 = document.querySelector("#container-4");
-
-      const slider1 = document.querySelector("#value0");
-      const slider2 = document.querySelector("#value1");
-      const slider3 = document.querySelector("#value2");
-      const slider4 = document.querySelector("#value3");
-
-      var counter = 0;
-
-      sliderContainer1.addEventListener("wheel", (event) => {
-        if (this.range.id === "value0") {
-          if (event.deltaY < 0) {
-            slider1.stepUp(2);
-            this.updateCircle();
-          } else {
-            slider1.stepDown(2);
-            this.updateCircle();
-          }
-        }
-      });
-
-      sliderContainer2.addEventListener("wheel", (event) => {
-        if (this.range.id === "value1") {
-          if (event.deltaY < 0) {
-            slider2.stepUp(2);
-            this.updateCircle();
-          } else {
-            slider2.stepDown(2);
-            this.updateCircle();
-          }
-        }
-      });
-
-      sliderContainer3.addEventListener("wheel", (event) => {
-        if (this.range.id === "value2") {
-          if (event.deltaY < 0) {
-            slider3.stepUp(2);
-            this.updateCircle();
-          } else {
-            slider3.stepDown(2);
-            this.updateCircle();
-          }
-        }
-      });
-
-      sliderContainer4.addEventListener("wheel", (event) => {
-        if (this.range.id === "value3") {
-          if (event.deltaY < 0) {
-            slider4.stepUp(2);
-            this.updateCircle();
-          } else {
-            slider4.stepDown(2);
-            this.updateCircle();
-          }
-        }
-      });
-
-      this.setCenter();
-      this.output.setAttribute("tabindex", 0);
-
-      this.output.addEventListener("keydown", (event) => {
-        switch (event.key) {
-          case "ArrowLeft":
-          case "ArrowDown":
-            event.preventDefault();
-            this.range.stepDown();
-            this.updateCircle();
-            break;
-          case "ArrowRight":
-          case "ArrowUp":
-            event.preventDefault();
-            this.range.stepUp();
-            this.updateCircle();
-            break;
-          default:
-            break;
-        }
-      });
-      this.output.addEventListener("pointerdown", () => {
-        return this.output.addEventListener("pointermove", pointerMove);
-      });
-      this.output.addEventListener("pointerup", () => {
-        return this.output.removeEventListener("pointermove", pointerMove);
-      });
-
-      this.updateCircle();
-    } else {
-      range.addEventListener("input", () => {
-        return this.updateRange();
-      });
-    }
-
-    /* TODO: Send init event ? */
-    range.dispatchEvent(new Event("input"));
+    }, 50);
   }
 
-  /**
-   * @function rotate
-   * @param {Number} x
-   * @param {Number} y
-   * @description  Returns angle from center of circle to current mouse x and y
-   */
-  rotate(x, y) {
-    return (Math.atan2(y - this.center.y, x - this.center.x) * 180) / Math.PI;
+  function stopContinuousSend() {
+    if (sendInterval) {
+      clearInterval(sendInterval);
+      sendInterval = null;
+    }
   }
 
-  /**
-   * @function setCenter
-   * @description Calculates center of circular range
-   */
-  setCenter() {
-    const rect = this.wrapper.getBoundingClientRect();
-    this.center = {
-      x: rect.left + rect.width / 2,
-      y: rect.top + rect.height / 2,
+  function getCanvasCoords(clientX, clientY) {
+    var rect = canvas.getBoundingClientRect();
+    return {
+      x: clientX - rect.left,
+      y: clientY - rect.top,
     };
   }
 
-  /**
-   * @function updateCircle
-   * @param {Number} start
-   * @description  Updates CSS Custom Props/coniuc-gradient when circular-input is modified
-   */
-
-  verifyCircle(start) {
-    let angle = start;
-    let rad = 360 / (this.max - this.min);
-    if (!angle) {
-      angle = rad * this.range.valueAsNumber + this.settings.offset;
-    }
-    let end = angle - this.settings.offset;
-    if (end < 0) {
-      end = end + 360;
-    }
-
-    return Math.ceil(end / rad);
+  function isInCircle(x, y) {
+    var dist = Math.sqrt(Math.pow(x - x_orig, 2) + Math.pow(y - y_orig, 2));
+    return dist <= radius;
   }
 
-  updateCircle(start) {
-    sendAngle(this.range.id);
-
-    let angle = start;
-    let rad = 360 / (this.max - this.min);
-    if (!angle) {
-      angle = rad * this.range.valueAsNumber + this.settings.offset;
-    }
-    let end = angle - this.settings.offset;
-    if (end < 0) {
-      end = end + 360;
-    }
-
-    if (start) {
-      this.range.value = Math.ceil(end / rad);
-    }
-
-    this.wrapper.dataset.value = this.range.value + "°";
-    this.wrapper.style.setProperty("--angle", `${angle}deg`);
-    this.wrapper.style.setProperty("--gradient-end", `${end}deg`);
+  function clampToCircle(x, y) {
+    var angle = Math.atan2(y - y_orig, x - x_orig);
+    return {
+      x: radius * Math.cos(angle) + x_orig,
+      y: radius * Math.sin(angle) + y_orig,
+    };
   }
 
-  /**
-   * @function updateRange
-   * @description Updates CSS Custom Props when range-input is modified
-   */
-  updateRange() {
-    if (this.lower) {
-      /* Active is `upper` */
-      if (this.lower.valueAsNumber > this.range.valueAsNumber) {
-        this.range.value = this.lower.valueAsNumber;
-        return;
+  function handleStart(x, y) {
+    if (!isInCircle(x, y)) return false;
+    paint = true;
+    handleMove(x, y);
+    startContinuousSend();
+    return true;
+  }
+
+  function handleMove(x, y) {
+    if (!paint) return;
+
+    var ballX, ballY;
+    if (isInCircle(x, y)) {
+      ballX = x;
+      ballY = y;
+    } else {
+      var clamped = clampToCircle(x, y);
+      ballX = clamped.x;
+      ballY = clamped.y;
+    }
+
+    redraw(ballX, ballY);
+
+    var x_relative = ballX - x_orig;
+    var y_relative = ballY - y_orig;
+
+    // Deadzone is 30% of radius
+    var deadzone = radius * 0.3;
+    currentDirX = toDirection(x_relative, deadzone);
+    currentDirY = toDirection(y_relative, deadzone);
+  }
+
+  function handleEnd() {
+    paint = false;
+    activeTouchId = null;
+    currentDirX = 0;
+    currentDirY = 0;
+    stopContinuousSend();
+    redraw(x_orig, y_orig);
+
+    // Send a final stop command
+    sendDirection(0, 0);
+  }
+
+  // ===================== MOUSE EVENTS =====================
+
+  canvas.addEventListener("mousedown", function (e) {
+    var coords = getCanvasCoords(e.clientX, e.clientY);
+    handleStart(coords.x, coords.y);
+  });
+
+  canvas.addEventListener("mousemove", function (e) {
+    if (!paint) return;
+    var coords = getCanvasCoords(e.clientX, e.clientY);
+    handleMove(coords.x, coords.y);
+  });
+
+  canvas.addEventListener("mouseup", function (e) {
+    if (paint) handleEnd();
+  });
+
+  canvas.addEventListener("mouseleave", function (e) {
+    if (paint) handleEnd();
+  });
+
+  // ===================== TOUCH EVENTS (multi-touch safe) =====================
+
+  canvas.addEventListener("touchstart", function (e) {
+    e.preventDefault();
+    // If this joystick is already being controlled by a finger, ignore new touches
+    if (activeTouchId !== null) return;
+
+    for (var i = 0; i < e.changedTouches.length; i++) {
+      var touch = e.changedTouches[i];
+      var coords = getCanvasCoords(touch.clientX, touch.clientY);
+      if (handleStart(coords.x, coords.y)) {
+        activeTouchId = touch.identifier;
+        break;
       }
     }
-    if (this.upper) {
-      /* Active is `lower` */
-      if (this.upper.valueAsNumber < this.range.valueAsNumber) {
-        this.range.value = this.upper.valueAsNumber;
-        return;
+  }, { passive: false });
+
+  canvas.addEventListener("touchmove", function (e) {
+    e.preventDefault();
+    if (activeTouchId === null) return;
+
+    for (var i = 0; i < e.changedTouches.length; i++) {
+      var touch = e.changedTouches[i];
+      if (touch.identifier === activeTouchId) {
+        var coords = getCanvasCoords(touch.clientX, touch.clientY);
+        handleMove(coords.x, coords.y);
+        break;
       }
     }
+  }, { passive: false });
 
-    const value = (this.range.valueAsNumber - this.min) * this.multiplier;
-    this.range.style.setProperty(this.settings.varPercent, `${value}%`);
-    this.range.style.setProperty(
-      this.settings.varValue,
-      `${this.range.valueAsNumber}`
-    );
+  canvas.addEventListener("touchend", function (e) {
+    e.preventDefault();
+    if (activeTouchId === null) return;
 
-    if (this.lower) {
-      this.lower.style.setProperty(this.settings.varPercentUpper, `${value}%`);
+    for (var i = 0; i < e.changedTouches.length; i++) {
+      var touch = e.changedTouches[i];
+      if (touch.identifier === activeTouchId) {
+        handleEnd();
+        break;
+      }
     }
+  }, { passive: false });
 
-    if (this.output) {
-      this.output.style.setProperty(this.settings.varUnit, `${value}`);
-      this.output.innerText = this.range.value;
+  canvas.addEventListener("touchcancel", function (e) {
+    e.preventDefault();
+    if (activeTouchId === null) return;
+
+    for (var i = 0; i < e.changedTouches.length; i++) {
+      var touch = e.changedTouches[i];
+      if (touch.identifier === activeTouchId) {
+        handleEnd();
+        break;
+      }
     }
-  }
+  }, { passive: false });
+
+  // ===================== INIT =====================
+
+  window.addEventListener("resize", resize);
+  resize();
+
+  return { resize: resize };
 }
 
-/* Helper methods */
-function stringToType(obj) {
-  const object = Object.assign({}, obj);
-  Object.keys(object).forEach((key) => {
-    if (typeof object[key] === "string" && object[key].charAt(0) === ":") {
-      object[key] = JSON.parse(object[key].slice(1));
-    }
-  });
-  return object;
-}
+// =====================================================================================
+// INITIALIZE JOYSTICKS ON PAGE LOAD
+// =====================================================================================
 
-function uuid() {
-  return ([1e7] + -1e3 + -4e3 + -8e3 + -1e11).replace(/[018]/g, (c) => {
-    return (
-      c ^
-      (crypto.getRandomValues(new Uint8Array(1))[0] & (15 >> (c / 4)))
-    ).toString(16);
-  });
-}
-
-/* Demo: Run it */
-const elements = document.querySelectorAll("[data-range]");
-elements.forEach((element) => {
-  new RangeSlider(element, element.dataset);
+window.addEventListener("load", function () {
+  createJoystick("canvasLeft", "joystickL");
+  createJoystick("canvasRight", "joystickR");
 });

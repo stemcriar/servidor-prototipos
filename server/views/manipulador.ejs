@@ -51,79 +51,26 @@
     </header>
 
     <main>
-      <div class="button-container container">
-        <button
-          type="button"
-          onclick="switchEffector()"
-          class="switch-claw disabled"
-        ></button>
-      </div>
-
-      <section class="slider-group-container">
-        <div class="slider-container" id="container-1">
-          <input
-            id="value0"
-            type="range"
-            class="c-rng"
-            min="0"
-            max="180"
-            step="1"
-            value="90"
-            data-range="circular"
-            data-modifier="c-rng--stem"
-          />
-          <span class="control-description">Base</span>
+      <section class="control-area">
+        <div class="joystick-wrapper" id="joystick-left-wrapper">
+          <canvas class="canvas_style" id="canvasLeft"></canvas>
+          <span class="control-description">Antebraço / Punho</span>
         </div>
 
-        <div class="slider-container" id="container-2">
-          <input
-            id="value1"
-            type="range"
-            class="c-rng"
-            min="0"
-            max="180"
-            step="1"
-            value="90"
-            data-range="circular"
-            data-modifier="c-rng--stem"
-          />
-          <span class="control-description">Braço</span>
-        </div>
-      </section>
-
-      <div class="image-container container">
-        <img src="../images/manipulador/Robot_Arm_III.png" alt="" />
-      </div>
-
-      <section class="slider-group-container">
-        <div class="slider-container" id="container-3">
-          <input
-            id="value2"
-            type="range"
-            class="c-rng"
-            min="0"
-            max="180"
-            step="1"
-            value="90"
-            data-range="circular"
-            data-modifier="c-rng--stem"
-          />
-          <span class="control-description">Antebraço</span>
+        <div class="center-controls">
+          <div class="image-container">
+            <img src="../images/manipulador/Robot_Arm_III.png" alt="Braço robótico" />
+          </div>
+          <button
+            type="button"
+            onclick="switchEffector()"
+            class="switch-claw disabled"
+          ></button>
         </div>
 
-        <div class="slider-container" id="container-4">
-          <input
-            id="value3"
-            type="range"
-            class="c-rng"
-            min="0"
-            max="180"
-            step="1"
-            value="90"
-            data-range="circular"
-            data-modifier="c-rng--stem"
-          />
-          <span class="control-description">Punho</span>
+        <div class="joystick-wrapper" id="joystick-right-wrapper">
+          <canvas class="canvas_style" id="canvasRight"></canvas>
+          <span class="control-description">Base / Braço</span>
         </div>
       </section>
     </main>
