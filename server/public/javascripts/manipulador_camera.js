@@ -18,7 +18,7 @@ var CameraControl = (function () {
   // =====================================================================================
   // CONSTANTS
   // =====================================================================================
-  var STEP = 2;
+  var STEP = 5;
   var GARRA_THRESH = 0.07;
   var GARRA_DEBOUNCE_FRAMES = 6;
   var GAME_LOOP_MS = 50;
