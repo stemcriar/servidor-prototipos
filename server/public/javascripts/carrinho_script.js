@@ -1,4 +1,6 @@
-var connection = new WebSocket('ws://' + location.hostname + ':1801/', ['arduino']);
+var wsProtocol = location.protocol === "https:" ? "wss" : "ws";
+var wsPort = location.protocol === "https:" ? "1802" : "1801";
+var connection = new WebSocket(wsProtocol + '://' + location.hostname + ':' + wsPort + '/', ['arduino']);
 connection.onopen = function () {
   connection.send(startPage());
 
