@@ -22,6 +22,9 @@
     />
     <link href="../stylesheets/reset.css" rel="stylesheet" />
     <link href="../stylesheets/carrinho_style.css" rel="stylesheet" />
+
+    <script async src="https://cdn.jsdelivr.net/npm/@mediapipe/drawing_utils/drawing_utils.js" crossorigin="anonymous"></script>
+    <script async src="https://cdn.jsdelivr.net/npm/@mediapipe/hands/hands.js" crossorigin="anonymous"></script>
   </head>
   <body>
     <header>
@@ -44,7 +47,42 @@
           alt="imagem-do-carrinho"
         />
       </div>
+      <div class="button-container">
+        <button
+          type="button"
+          id="camera-activate-btn"
+          class="camera-activate-btn"
+          onclick="CameraControl.open()"
+          title="Controle por Câmera"
+        >
+          <svg viewBox="0 0 24 24" width="24" height="24" fill="currentColor">
+            <path d="M17 10.5V7c0-.55-.45-1-1-1H4c-.55 0-1 .45-1 1v10c0 .55.45 1 1 1h12c.55 0 1-.45 1-1v-3.5l4 4v-11l-4 4z"/>
+          </svg>
+        </button>
+      </div>
       <canvas class="canvas_style" id="canvas" name="game"></canvas>
+    </div>
+
+    <div id="camera-modal" class="camera-modal hidden">
+      <div class="camera-modal-header">
+        <img
+          src="/images/manipulador/Logo acadstem.png"
+          alt="Logo academia stem"
+          class="logo-acadstem"
+        />
+        <h2>Visão Computacional</h2>
+      </div>
+      <div class="camera-video-container">
+        <div class="camera-canvas-wrapper">
+          <button class="camera-close-btn" onclick="CameraControl.close()" title="Fechar">✕</button>
+          <video id="camera-video" playsinline></video>
+          <canvas id="camera-canvas"></canvas>
+          <div id="camera-loading" class="camera-loading">
+            <div class="camera-spinner"></div>
+            <span>Carregando modelo de IA...</span>
+          </div>
+        </div>
+      </div>
     </div>
     <script>
       var canvas, ctx, rect;
@@ -189,6 +227,7 @@
       }
     </script>
     <script src="../javascripts/carrinho_script.js"></script>
+    <script src="../javascripts/carrinho_camera.js"></script>
     <footer></footer>
   </body>
 </html>
