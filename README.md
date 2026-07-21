@@ -8,7 +8,7 @@ Este material foi preparado para conectar e controlar os protótipos de forma r�
 
 Nesta etapa vamos ligar a "central de comando" no seu computador. (Essa etapa supõe que você já instalou o Node.js — caso contrário, veja a seção de Pré-Requisito no fim desta página).
 
-1. Baixe o [arquivo do Servidor](https://github.com/stemcriar/servidor-stem-criar/archive/refs/tags/2.1.zip) em formato `.zip` e descompacte (extraia a pasta) no seu computador.
+1. Baixe o [arquivo do Servidor](https://github.com/stemcriar/servidor-stem-criar/archive/refs/tags/2.2.zip) em formato `.zip` e descompacte (extraia a pasta) no seu computador.
 2. Abra a pasta descompactada e clique duas vezes no arquivo **`run`**.
 3. Aguarde alguns segundos e, em seguida, a tela do **Servidor STEM Criar** abrirá no seu navegador.
 4. Você pode acessar o servidor de qualquer dispositivo que estiver na mesma rede que o computador (como seu celular ou tablet) digitando o endereço IP do servidor no navegador do dispositivo.
